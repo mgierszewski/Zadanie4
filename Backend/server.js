@@ -3,24 +3,41 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 // server.js
+
 import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
+import fs from 'fs';
 
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-let items = [];
-// Preferuj ENV INSTANCE_ID, fallback na uuid
+
+const DATA_FILE = '/data/items.json';
+function loadItems() {
+  try {
+    return JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8'));
+  } catch {
+    return [];
+  }
+}
+function saveItems(items) {
+  fs.writeFileSync(DATA_FILE, JSON.stringify(items, null, 2));
+}
+
+let items = loadItems();
 const instanceId = process.env.INSTANCE_ID || uuidv4();
+
 
 
 // GET /items
 app.get('/items', (req, res) => {
+  items = loadItems();
   res.json(items);
 });
+
 
 
 // POST /items
@@ -28,6 +45,7 @@ app.post('/items', (req, res) => {
   const { name, price, manufacturer, category, description } = req.body;
   if (name && price && manufacturer && category) {
     items.push({ name, price, manufacturer, category, description });
+    saveItems(items);
     res.status(201).json({ ok: true });
   } else {
     res.status(400).json({ error: 'Wszystkie pola są wymagane: nazwa, cena, producent, kategoria' });
