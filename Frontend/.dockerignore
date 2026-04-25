@@ -1,4 +1,4 @@
-# Backend .dockerignore
+# Frontend .dockerignore
 node_modules
 .git
 *.log

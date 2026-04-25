@@ -3,17 +3,23 @@ import express from 'express';
 import cors from 'cors';
 import { v4 as uuidv4 } from 'uuid';
 
+
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 let items = [];
-const instanceId = uuidv4();
+// Preferuj ENV INSTANCE_ID, fallback na uuid
+const instanceId = process.env.INSTANCE_ID || uuidv4();
 
+
+// GET /items
 app.get('/items', (req, res) => {
   res.json(items);
 });
 
+
+// POST /items
 app.post('/items', (req, res) => {
   const { name, price, manufacturer, category, description } = req.body;
   if (name && price && manufacturer && category) {
@@ -35,19 +41,27 @@ app.delete('/items/:id', (req, res) => {
   }
 });
 
+
+// GET /stats
 app.get('/stats', (req, res) => {
-  // Dodatkowe statystyki
   const count = items.length;
   const manufacturers = [...new Set(items.map(i => i.manufacturer))];
   const categories = [...new Set(items.map(i => i.category))];
   const avgPrice = count > 0 ? (items.reduce((sum, i) => sum + parseFloat(i.price), 0) / count).toFixed(2) : 0;
   res.json({
     count,
-    instanceId: process.env.INSTANCE_ID || 'unknown',
+    instanceId,
     manufacturers,
     categories,
     avgPrice
   });
 });
 
-app.listen(3000);
+
+// Listen on port from ENV or 3000
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Backend listening on port ${port}`);
+  }
+});
