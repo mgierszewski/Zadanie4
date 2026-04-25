@@ -1,3 +1,7 @@
+// Endpoint zdrowia do testu cache hit
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
 // server.js
 import express from 'express';
 import cors from 'cors';
